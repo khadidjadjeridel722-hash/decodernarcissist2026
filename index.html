@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decode Your Narcissist — The Recovery Library</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07070F;
+    --bg2: #0E0C1E;
+    --purple: #7B5CF5;
+    --purple-light: #B8A9F5;
+    --purple-dim: rgba(123,92,245,0.12);
+    --teal: #2DD4BF;
+    --amber: #F59E0B;
+    --coral: #F87171;
+    --text: #F0EEF8;
+    --text-mid: #A89FC8;
+    --text-dim: #5A5470;
+    --border: rgba(123,92,245,0.2);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ── GLOW ── */
+  .glow {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .glow-1 { width: 600px; height: 600px; background: rgba(123,92,245,0.08); top: -200px; left: -100px; }
+  .glow-2 { width: 400px; height: 400px; background: rgba(45,212,191,0.05); bottom: 200px; right: -100px; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(to bottom, rgba(7,7,15,0.95), transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--text);
+  }
+
+  .nav-logo span { color: var(--purple-light); }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 13px;
+    color: var(--text-mid);
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--purple-light);
+    border: 1px solid var(--border);
+    padding: 6px 16px;
+    border-radius: 99px;
+    margin-bottom: 32px;
+    background: var(--purple-dim);
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(42px, 8vw, 88px);
+    font-weight: 900;
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+    max-width: 800px;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--purple-light);
+  }
+
+  .hero p {
+    font-size: clamp(15px, 2vw, 18px);
+    color: var(--text-mid);
+    max-width: 520px;
+    margin-bottom: 48px;
+    line-height: 1.7;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn-primary {
+    background: var(--purple);
+    color: white;
+    border: none;
+    padding: 16px 36px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: #6B4CE5; transform: translateY(-1px); box-shadow: 0 8px 30px rgba(123,92,245,0.3); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-mid);
+    border: 1px solid var(--border);
+    padding: 16px 36px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-block;
+  }
+  .btn-ghost:hover { border-color: var(--purple-light); color: var(--text); }
+
+  /* ── SCROLL INDICATOR ── */
+  .scroll-hint {
+    margin-top: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-dim);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .scroll-hint .line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--purple), transparent);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+  /* ── SECTION ── */
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 100px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--purple-light);
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    font-size: 16px;
+    color: var(--text-mid);
+    max-width: 540px;
+    line-height: 1.7;
+    margin-bottom: 60px;
+  }
+
+  /* ── PRODUCTS GRID ── */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .product-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--accent-color, var(--purple)), transparent);
+  }
+
+  .product-card:hover {
+    border-color: rgba(123,92,245,0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  .product-card.featured {
+    border-color: var(--purple);
+    background: linear-gradient(135deg, #0E0C1E, #12103A);
+  }
+
+  .product-card.featured .featured-badge {
+    position: absolute;
+    top: 16px; right: 16px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--purple-light);
+    background: var(--purple-dim);
+    padding: 4px 10px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+  }
+
+  .product-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+
+  .product-num {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .product-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .product-sub {
+    font-size: 13px;
+    color: var(--purple-light);
+    font-style: italic;
+    margin-bottom: 14px;
+  }
+
+  .product-desc {
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.65;
+    margin-bottom: 20px;
+    flex: 1;
+  }
+
+  .product-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .meta-pill {
+    font-size: 11px;
+    color: var(--text-dim);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 3px 10px;
+    border-radius: 99px;
+  }
+
+  .product-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+  }
+
+  .product-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .product-price span {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  .btn-buy {
+    background: var(--purple-dim);
+    color: var(--purple-light);
+    border: 1px solid var(--border);
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-buy:hover { background: var(--purple); color: white; border-color: var(--purple); }
+
+  /* ── BUNDLE ── */
+  .bundle-card {
+    background: linear-gradient(135deg, #0E0C1E 0%, #14103A 50%, #0E1A14 100%);
+    border: 1px solid var(--purple);
+    border-radius: 20px;
+    padding: 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    margin-top: 20px;
+  }
+
+  .bundle-card::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -100px;
+    width: 300px; height: 300px;
+    background: rgba(123,92,245,0.08);
+    border-radius: 50%;
+    filter: blur(60px);
+  }
+
+  .bundle-items { list-style: none; }
+  .bundle-items li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 14px;
+    color: var(--text-mid);
+  }
+  .bundle-items li:last-child { border-bottom: none; }
+  .bundle-items li::before {
+    content: '✦';
+    color: var(--purple-light);
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .bundle-right { text-align: center; }
+
+  .bundle-original {
+    font-size: 16px;
+    color: var(--text-dim);
+    text-decoration: line-through;
+    margin-bottom: 8px;
+  }
+
+  .bundle-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 64px;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .bundle-save {
+    display: inline-block;
+    background: rgba(45,212,191,0.1);
+    color: var(--teal);
+    border: 1px solid rgba(45,212,191,0.2);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 99px;
+    margin-bottom: 24px;
+  }
+
+  /* ── TESTIMONIALS ── */
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .testimonial-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+  }
+
+  .testimonial-quote {
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.7;
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+
+  .testimonial-quote::before { content: '"'; color: var(--purple-light); font-size: 20px; }
+  .testimonial-quote::after  { content: '"'; color: var(--purple-light); font-size: 20px; }
+
+  .testimonial-source {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── ABOUT ── */
+  .about-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 48px;
+    align-items: start;
+  }
+
+  .about-icon {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: var(--purple-dim);
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 48px 24px;
+    text-align: center;
+  }
+
+  footer .footer-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  footer p {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+
+  footer .footer-links {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    list-style: none;
+  }
+
+  footer .footer-links a {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  footer .footer-links a:hover { color: var(--purple-light); }
+
+  /* ── DIVIDER LINE ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 0 24px;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    .nav-links { display: none; }
+    .bundle-card { grid-template-columns: 1fr; gap: 32px; padding: 32px 24px; }
+    .about-card { grid-template-columns: 1fr; }
+    .bundle-price { font-size: 48px; }
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-tag  { animation: fadeUp 0.6s ease both; }
+  .hero h1   { animation: fadeUp 0.6s 0.1s ease both; }
+  .hero p    { animation: fadeUp 0.6s 0.2s ease both; }
+  .hero-cta  { animation: fadeUp 0.6s 0.3s ease both; }
+</style>
+</head>
+<body>
+
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Decode Your <span>Narcissist</span></div>
+  <ul class="nav-links">
+    <li><a href="#products">Workbooks</a></li>
+    <li><a href="#bundle">Bundle</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="https://youtube.com/@decode_your_narcissist?si=isAvKoZ-I4kltizV" target="_blank">YouTube ↗</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">The Recovery Library</div>
+  <h1>Finally <em>understand</em><br>what happened to you.</h1>
+  <p>Practical workbooks for survivors of narcissistic abuse — built from real experience, not textbooks.</p>
+  <div class="hero-cta">
+    <a href="#products" class="btn-primary">See the Workbooks</a>
+    <a href="#bundle" class="btn-ghost">Get the Full Bundle →</a>
+  </div>
+  <div class="scroll-hint">
+    <div class="line"></div>
+    <span>Scroll</span>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<section id="products">
+  <div class="section-label">The Workbooks</div>
+  <h2 class="section-title">Four guides.<br>One journey.</h2>
+  <p class="section-sub">Each workbook addresses a specific question survivors ask. Start where you are.</p>
+
+  <div class="products-grid">
+
+    <!-- PRODUCT 1 -->
+    <div class="product-card" style="--accent-color: #2DD4BF;">
+      <div class="product-icon" style="background:rgba(45,212,191,0.1);">📋</div>
+      <div class="product-num">Workbook 01</div>
+      <div class="product-title">The Clarity Guide</div>
+      <div class="product-sub">Is This Guilt Yours to Carry?</div>
+      <div class="product-desc">A 5-part process for separating real guilt from guilt that was placed on you by someone who needed you to carry it.</div>
+      <div class="product-meta">
+        <span class="meta-pill">8 pages</span>
+        <span class="meta-pill">5 parts</span>
+        <span class="meta-pill">Printable</span>
+      </div>
+      <div class="product-footer">
+        <div class="product-price">$12 <span>USD</span></div>
+        <a href="https://payhip.com/b/JfUL8" target="_blank" class="btn-buy">Get it →</a>
+      </div>
+    </div>
+
+    <!-- PRODUCT 2 -->
+    <div class="product-card" style="--accent-color: #B8A9F5;">
+      <div class="product-icon" style="background:rgba(123,92,245,0.12);">🔍</div>
+      <div class="product-num">Workbook 02</div>
+      <div class="product-title">Am I the Problem?</div>
+      <div class="product-sub">The Self-Perception Workbook</div>
+      <div class="product-desc">5 structured tests to examine whether what you believe about yourself is true — or was installed by someone who needed you to believe the worst.</div>
+      <div class="product-meta">
+        <span class="meta-pill">10 pages</span>
+        <span class="meta-pill">5 tests</span>
+        <span class="meta-pill">Evidence table</span>
+      </div>
+      <div class="product-footer">
+        <div class="product-price">$14 <span>USD</span></div>
+        <a href="https://payhip.com/b/rIsA9" target="_blank" class="btn-buy">Get it →</a>
+      </div>
+    </div>
+
+    <!-- PRODUCT 3 -->
+    <div class="product-card featured" style="--accent-color: #7B5CF5;">
+      <div class="featured-badge">Most Complete</div>
+      <div class="product-icon" style="background:rgba(123,92,245,0.15);">🗺️</div>
+      <div class="product-num">Workbook 03</div>
+      <div class="product-title">The Recovery Roadmap</div>
+      <div class="product-sub">5 Phases from Recognition to Rebuilding</div>
+      <div class="product-desc">A step-by-step guide through the 5 phases of recovery — with exercises, journal prompts, and a progress tracker for each phase.</div>
+      <div class="product-meta">
+        <span class="meta-pill">14 pages</span>
+        <span class="meta-pill">5 phases</span>
+        <span class="meta-pill">15 exercises</span>
+      </div>
+      <div class="product-footer">
+        <div class="product-price">$17 <span>USD</span></div>
+        <a href="https://payhip.com/b/vL8sa" target="_blank" class="btn-buy">Get it →</a>
+      </div>
+    </div>
+
+    <!-- PRODUCT 4 -->
+    <div class="product-card" style="--accent-color: #F59E0B;">
+      <div class="product-icon" style="background:rgba(245,158,11,0.1);">✋</div>
+      <div class="product-num">Workbook 04</div>
+      <div class="product-title">The Boundary Script</div>
+      <div class="product-sub">What to Say. How to Say It.</div>
+      <div class="product-desc">30+ word-for-word scripts for setting limits, responding to pushback, handling hoovering, and Grey Rock for unavoidable contact.</div>
+      <div class="product-meta">
+        <span class="meta-pill">10 pages</span>
+        <span class="meta-pill">30+ scripts</span>
+        <span class="meta-pill">Quick ref card</span>
+      </div>
+      <div class="product-footer">
+        <div class="product-price">$12 <span>USD</span></div>
+        <a href="https://payhip.com/b/svu6H" target="_blank" class="btn-buy">Get it →</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- BUNDLE -->
+<section id="bundle" style="max-width:1100px;">
+  <div class="section-label">Best Value</div>
+  <h2 class="section-title">The Survivor's Toolkit</h2>
+  <p class="section-sub">All four workbooks — the complete recovery library.</p>
+
+  <div class="bundle-card">
+    <div>
+      <ul class="bundle-items">
+        <li>The Clarity Guide — Is This Guilt Yours? <em style="color:var(--text-dim);font-size:12px;margin-left:auto;">$12</em></li>
+        <li>Am I the Problem? Workbook <em style="color:var(--text-dim);font-size:12px;margin-left:auto;">$14</em></li>
+        <li>The Recovery Roadmap — 5 Phases <em style="color:var(--text-dim);font-size:12px;margin-left:auto;">$17</em></li>
+        <li>The Boundary Script — 30+ Scripts <em style="color:var(--text-dim);font-size:12px;margin-left:auto;">$12</em></li>
+      </ul>
+    </div>
+    <div class="bundle-right">
+      <div class="bundle-original">$55 separately</div>
+      <div class="bundle-price">$39</div>
+      <div class="bundle-save">Save $16</div>
+      <a href="https://payhip.com/DecodYourNarcissist" target="_blank" class="btn-primary" style="width:100%;text-align:center;display:block;">Get the Full Bundle →</a>
+      <p style="font-size:12px;color:var(--text-dim);margin-top:12px;">Instant download · PDF · Printable</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TESTIMONIALS -->
+<section>
+  <div class="section-label">From Survivors</div>
+  <h2 class="section-title">What people are saying</h2>
+  <p class="section-sub">Real words from real people in support communities.</p>
+
+  <div class="testimonials-grid">
+    <div class="testimonial-card">
+      <p class="testimonial-quote">I finally have language for something I've been living for years and couldn't name. The Clarity Guide made me cry — in a good way. It was the first time I stopped blaming myself.</p>
+      <div class="testimonial-source">r/NarcissisticAbuse · Survivor, 7-year relationship</div>
+    </div>
+    <div class="testimonial-card">
+      <p class="testimonial-quote">The Boundary Script is the first thing that actually helped me respond without freezing. I printed the quick reference card and kept it in my wallet.</p>
+      <div class="testimonial-source">Support community member</div>
+    </div>
+    <div class="testimonial-card">
+      <p class="testimonial-quote">Am I the Problem? gave me the evidence test I needed. I filled in the table and saw in black and white that there was no real evidence for the things I believed about myself.</p>
+      <div class="testimonial-source">r/emotionalabuse · Reader</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-label">About</div>
+  <h2 class="section-title">Where this comes from</h2>
+  <br>
+  <div class="about-card">
+    <div>
+      <div class="about-icon">💜</div>
+    </div>
+    <div>
+      <p style="font-size:16px;line-height:1.8;color:var(--text-mid);margin-bottom:16px;">
+        These workbooks weren't written by someone who studied narcissism in a textbook.
+      </p>
+      <p style="font-size:15px;line-height:1.8;color:var(--text-mid);margin-bottom:16px;">
+        They were written by someone who lived it — and spent years afterward trying to understand what had happened, why it worked so well, and how to find their way back to themselves.
+      </p>
+      <p style="font-size:15px;line-height:1.8;color:var(--text-mid);margin-bottom:24px;">
+        The Decode Your Narcissist channel and this library exist because I needed these resources and couldn't find them. Not the academic language. Not the 'just leave' advice. The actual, honest, practical help for someone in the middle of it.
+      </p>
+      <a href="https://youtube.com/@decode_your_narcissist?si=isAvKoZ-I4kltizV" target="_blank" class="btn-ghost">Watch on YouTube →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Decode Your Narcissist</div>
+  <p>Psychology content on narcissistic abuse, manipulation, and recovery — from someone who has lived it.</p>
+  <ul class="footer-links">
+    <li><a href="#products">Workbooks</a></li>
+    <li><a href="#bundle">Bundle</a></li>
+    <li><a href="https://youtube.com/@decode_your_narcissist?si=isAvKoZ-I4kltizV" target="_blank">YouTube</a></li>
+    <li><a href="https://payhip.com/DecodYourNarcissist" target="_blank">Payhip Shop</a></li>
+  </ul>
+  <p style="margin-top:24px;font-size:11px;color:var(--text-dim);">© 2025 Decode Your Narcissist · All workbooks are for educational purposes and do not constitute professional therapy.</p>
+</footer>
+
+</body>
+</html>
